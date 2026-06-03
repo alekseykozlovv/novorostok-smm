@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>НовоРосток — SMM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Manrope:wght@400;500;600&display=swap');
+:root {
+  --bg:#0c0f14;--surface:#131720;--surface2:#1a2030;
+  --border:#232b3a;--accent:#4ade80;--accent2:#22d3ee;
+  --text:#e8edf5;--muted:#6b7a99;--danger:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;overscroll-behavior:none;}
+.app{display:flex;flex-direction:column;height:100dvh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-name{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:600;}
+.logo-sub{font-size:10px;color:var(--muted);}
+.badge{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:var(--accent);font-size:10px;padding:3px 10px;border-radius:20px;font-weight:600;}
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tabs-wrap::-webkit-scrollbar{display:none;}
+.tabs{display:flex;padding:10px 12px;gap:8px;width:max-content;}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .15s;min-width:80px;color:var(--muted);font-family:'Manrope',sans-serif;}
+.tab.active{border-color:var(--accent);background:rgba(74,222,128,.08);color:var(--accent);}
+.tab-icon{font-size:20px;}.tab-label{font-size:10px;font-weight:600;text-align:center;line-height:1.3;}
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.task-info{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.task-title{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:600;margin-bottom:4px;}
+.task-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.fields{display:flex;flex-direction:column;gap:10px;}
+.field-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Manrope',sans-serif;font-size:14px;padding:11px 13px;border-radius:10px;outline:none;-webkit-appearance:none;appearance:none;}
+select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:none;line-height:1.6;}
+textarea::placeholder{color:var(--muted);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.chip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;transition:all .15s;font-family:'Manrope',sans-serif;}
+.chip:active{border-color:var(--accent);color:var(--accent);background:rgba(74,222,128,.08);}
+.gen-btn{width:100%;background:linear-gradient(135deg,var(--accent),#22c55e);color:#0c0f14;border:none;border-radius:12px;padding:15px;font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:opacity .2s;}
+.gen-btn:disabled{opacity:.5;}
+.gen-btn:active{opacity:.85;}
+.output-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.output-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.output-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);}
+.copy-btn{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--accent);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;}
+.output-text{padding:14px;font-size:14px;line-height:1.8;white-space:pre-wrap;}
+.loading{display:flex;align-items:center;gap:12px;padding:16px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🌱</div>
+      <div><div class="logo-name">НовоРосток</div><div class="logo-sub">SMM-ассистент</div></div>
+    </div>
+    <div class="badge">AI-команда</div>
+  </div>
+  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
+  <div class="scroll-area" id="scrollArea">
+    <div class="task-info">
+      <div class="task-title" id="taskTitle"></div>
+      <div class="task-desc" id="taskDesc"></div>
+    </div>
+    <div class="fields" id="fieldsArea"></div>
+    <button class="gen-btn" id="genBtn" onclick="generate()">✦ Сгенерировать</button>
+    <div id="outputArea"></div>
+  </div>
+</div>
+
+<script>
+const TASKS=[
+  {id:'post',icon:'✍️',label:'Пост\nTG/VK',
+   title:'✍️ Пост для Telegram / ВКонтакте',
+   desc:'Пост, который строит доверие. Без агрессивных продаж.',
+   fields:()=>`
+    <div><div class="field-label">Аудитория</div>
+    <select id="f_audience"><option>Родители подростков 35–45 лет</option><option>Подростки 12–16 лет</option><option>Оба сегмента</option></select></div>
+    <div><div class="field-label">Тип поста</div>
+    <select id="f_type"><option>История / кейс</option><option>Польза / совет</option><option>Боль / проблема</option><option>Эмоциональный</option><option>Знакомство с Новой</option></select></div>
+    <div><div class="field-label">Платформа</div>
+    <select id="f_platform"><option>Telegram-канал</option><option>ВКонтакте</option><option>Оба</option></select></div>
+    <div><div class="field-label">Тема (необязательно)</div>
+    <textarea id="f_topic" rows="2" placeholder="Например: почему умный ребёнок ничего не хочет..."></textarea>
+    <div class="chips">
+      <span class="chip" onclick="sf('f_topic','Умный ребёнок ничего не хочет')">Умный, но не хочет</span>
+      <span class="chip" onclick="sf('f_topic','Как перестать кричать из-за уроков')">Перестать кричать</span>
+      <span class="chip" onclick="sf('f_topic','Знакомство с Новой — AI-наставником')">Знакомство с Новой</span>
+      <span class="chip" onclick="sf('f_topic','Почему профориентация не работает')">Провал профориентации</span>
+      <span class="chip" onclick="sf('f_topic','Нет мечты — это нормально')">Нет мечты — норма</span>
+      <span class="chip" onclick="sf('f_topic','AI помогает без давления')">AI без давления</span>
+    </div></div>`,
+   sys:`Ты — SMM-копирайтер проекта «НовоРосток» (AI-наставник для подростков 12–18 лет). ГОЛОС: тёплый, честный, без давления. Фокус — снижение напряжения в семье. Никаких манипуляций и обещаний успеха. Запрещено: "ваш ребёнок отстанет", обещания дохода, сравнение детей.`,
+   prompt:d=>`Напиши пост для ${d.f_platform||'Telegram'}, аудитория: ${d.f_audience||'родители'}, тип: ${d.f_type||'история'}.${d.f_topic?' Тема: '+d.f_topic:''}
+Структура: 1) Хук (1-2 строки) 2) Тело (3-5 абзацев) 3) Мягкий CTA. 180-260 слов. 1-3 эмодзи. Только пост.`
+  },
+  {id:'story',icon:'📱',label:'Stories',
+   title:'📱 Текст для Stories',
+   desc:'Короткий текст. 2-3 экрана, максимум вовлечения.',
+   fields:()=>`
+    <div><div class="field-label">Аудитория</div>
+    <select id="f_audience"><option>Родители</option><option>Подростки</option></select></div>
+    <div><div class="field-label">Цель</div>
+    <select id="f_goal"><option>Вовлечь / познакомить</option><option>Привести в бот</option><option>Вызвать эмоцию</option><option>Опрос / интерактив</option></select></div>
+    <div><div class="field-label">Тема</div>
+    <textarea id="f_topic" rows="2" placeholder="Например: момент когда ребёнок сказал 'не хочу'..."></textarea></div>`,
+   sys:`Ты — копирайтер «НовоРосток». Создаёшь тексты для Stories. Голос: живой, тёплый, без корпоративщины.`,
+   prompt:d=>`Аудитория: ${d.f_audience}. Цель: ${d.f_goal}. Тема: ${d.f_topic||'придумай сам'}.
+Напиши 2-3 экрана Stories. Обозначь [Экран 1], [Экран 2] и т.д. Экран 1: хук 1-2 предложения. Последний: мягкий CTA. Очень короткие предложения. На русском.`
+  },
+  {id:'plan',icon:'📅',label:'План\nнедели',
+   title:'📅 Контент-план на неделю',
+   desc:'7 постов с темами, типами и CTA.',
+   fields:()=>`
+    <div><div class="field-label">Платформа</div>
+    <select id="f_platform"><option>Telegram-канал</option><option>ВКонтакте</option><option>Оба</option></select></div>
+    <div><div class="field-label">Акцент недели</div>
+    <select id="f_focus"><option>Знакомство с проектом</option><option>Боли родителей</option><option>Истории пользователей</option><option>Знакомство с Новой</option><option>Экспертный контент</option><option>Прогрев к продаже</option></select></div>`,
+   sys:`Ты — контент-стратег «НовоРосток». Строишь контент-планы для EdTech-продукта для подростков.`,
+   prompt:d=>`Контент-план на 7 дней для ${d.f_platform}. Акцент: ${d.f_focus}.
+Чередуй типы: история, боль, польза, знакомство, интерактив, эмоциональный, лёгкий. Ни одного рекламного поста.
+Формат каждого дня:
+День N | [Тип] | Аудитория: ...
+📌 Тема: ...
+💡 Идея: ...
+🎯 CTA: ...`
+  },
+  {id:'hook',icon:'🎯',label:'Хуки',
+   title:'🎯 Хуки и заголовки',
+   desc:'10 цепляющих первых строк для постов.',
+   fields:()=>`
+    <div><div class="field-label">Аудитория</div>
+    <select id="f_audience"><option>Родители</option><option>Подростки</option><option>Оба</option></select></div>
+    <div><div class="field-label">Тема</div>
+    <select id="f_theme"><option>Мотивация и интерес к учёбе</option><option>Конфликты родитель-ребёнок</option><option>Выбор профессии / будущее</option><option>Знакомство с Новой</option><option>Страх неопределённости</option></select></div>`,
+   sys:`Ты — копирайтер «НовоРосток». Пишешь цепляющие хуки без кликбейта и манипуляций.`,
+   prompt:d=>`Напиши 10 хуков (первых строк постов). Аудитория: ${d.f_audience}. Тема: ${d.f_theme}.
+Правила: цепляет без кликбейта, вызывает узнавание, разные форматы (вопрос, утверждение, история, факт). 1-2 предложения. Пронумеруй 1-10. Только хуки.`
+  },
+  {id:'reply',icon:'💬',label:'Ответ\nклиенту',
+   title:'💬 Ответ подписчику',
+   desc:'Вставь сообщение — получи живой ответ в голосе НовоРостка.',
+   fields:()=>`
+    <div><div class="field-label">Сообщение от подписчика</div>
+    <textarea id="f_message" rows="4" placeholder="Вставь комментарий или вопрос от подписчика..."></textarea></div>
+    <div><div class="field-label">Кто написал</div>
+    <select id="f_who"><option>Родитель</option><option>Подросток</option><option>Непонятно</option></select></div>
+    <div><div class="field-label">Тон ответа</div>
+    <select id="f_tone"><option>Тёплый и поддерживающий</option><option>Экспертный</option><option>Лёгкий и дружелюбный</option></select></div>`,
+   sys:`Ты — комьюнити-менеджер «НовоРосток». Отвечаешь живо, по-человечески, без шаблонов.`,
+   prompt:d=>`Сообщение от ${d.f_who||'подписчика'}: "${d.f_message}". Тон: ${d.f_tone||'тёплый'}.
+Напиши ответ 3-6 предложений. Покажи что слышишь. Мягко упомяни Нову если уместно. Не навязывай. Обращайся на "ты" (подросток) или "вы" (родитель). Только ответ.`
+  },
+  {id:'objection',icon:'🛡️',label:'Возра-\nжение',
+   title:'🛡️ Закрыть возражение',
+   desc:'3 варианта ответа — от мягкого к убедительному.',
+   fields:()=>`
+    <div><div class="field-label">Возражение клиента</div>
+    <textarea id="f_objection" rows="3" placeholder="Например: 'Зачем AI, когда есть психолог?'..."></textarea>
+    <div class="chips">
+      <span class="chip" onclick="sf('f_objection','Зачем AI, если есть живой психолог?')">AI vs психолог</span>
+      <span class="chip" onclick="sf('f_objection','3900 рублей — это дорого')">Дорого</span>
+      <span class="chip" onclick="sf('f_objection','Ребёнок не будет пользоваться')">Не будет пользоваться</span>
+      <span class="chip" onclick="sf('f_objection','Не доверяю AI с детьми')">Не доверяю AI</span>
+      <span class="chip" onclick="sf('f_objection','Это просто ChatGPT?')">Просто ChatGPT?</span>
+    </div></div>`,
+   sys:`Ты — эксперт по продажам «НовоРосток». Снимаешь возражения без манипуляций и давления.`,
+   prompt:d=>`Возражение: "${d.f_objection}".
+Напиши 3 варианта ответа: [Мягкий], [Стандартный], [Убедительный]. Начни с эмпатии. Без манипуляций. 3-5 предложений каждый.`
+  },
+  {id:'promo',icon:'💰',label:'Прогрев',
+   title:'💰 Прогрев к продаже',
+   desc:'Серия из 3 постов, которая мягко ведёт к покупке.',
+   fields:()=>`
+    <div><div class="field-label">Продукт</div>
+    <select id="f_product"><option>ПрофНавигатор (3 900 ₽)</option><option>Подписка (1 490 ₽/мес)</option><option>Бесплатный вход в бот</option></select></div>
+    <div><div class="field-label">Аудитория</div>
+    <select id="f_audience"><option>Родители</option><option>Подростки</option></select></div>`,
+   sys:`Ты — стратег прогревов «НовоРосток». Создаёшь мягкие серии постов без давления и манипуляций.`,
+   prompt:d=>`Продукт: ${d.f_product}. Аудитория: ${d.f_audience}.
+Напиши серию 3 постов. [ПОСТ 1]: Боль без продажи. [ПОСТ 2]: Решение, мягко упомяни продукт. [ПОСТ 3]: Прямое предложение без давления. CTA мягкий. 100-180 слов каждый.`
+  },
+  {id:'expert',icon:'🧠',label:'Эксперт',
+   title:'🧠 Экспертный пост',
+   desc:'Глубокий авторский пост, который строит доверие.',
+   fields:()=>`
+    <div><div class="field-label">Тема</div>
+    <select id="f_theme"><option>Почему подростки теряют мотивацию</option><option>Как работает RIASEC для подростков</option><option>Разница между наставником и тестом</option><option>Почему AI-этика важна с детьми</option><option>Как снизить конфликты в семье</option></select></div>
+    <div><div class="field-label">Длина</div>
+    <select id="f_length"><option>Средний (300-400 слов)</option><option>Длинный (500-700 слов)</option></select></div>`,
+   sys:`Ты — основатель «НовоРосток». Пишешь глубокие экспертные посты от первого лица.`,
+   prompt:d=>`Тема: ${d.f_theme}. Длина: ${d.f_length}.
+Авторский пост: живые примеры, без академической скуки. Структура: хук → суть → разбор → вывод → мягкая связь с НовоРостком (1-2 предложения). Без списков из 10 пунктов.`
+  }
+];
+
+let cur='post';
+
+function init(){
+  const el=document.getElementById('tabs');
+  TASKS.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tab'+(t.id===cur?' active':'');
+    b.id='tab-'+t.id;
+    b.innerHTML=`<span class="tab-icon">${t.icon}</span><span class="tab-label">${t.label}</span>`;
+    b.onclick=()=>sw(t.id);
+    el.appendChild(b);
+  });
+  render(cur);
+}
+
+function sw(id){
+  document.getElementById('tab-'+cur)?.classList.remove('active');
+  cur=id;
+  document.getElementById('tab-'+id)?.classList.add('active');
+  document.getElementById('tab-'+id)?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  render(id);
+}
+
+function render(id){
+  const t=TASKS.find(x=>x.id===id);
+  document.getElementById('taskTitle').textContent=t.title;
+  document.getElementById('taskDesc').textContent=t.desc;
+  document.getElementById('fieldsArea').innerHTML=t.fields();
+  document.getElementById('outputArea').innerHTML='';
+  document.getElementById('scrollArea').scrollTo(0,0);
+}
+
+function sf(id,val){const e=document.getElementById(id);if(e)e.value=val;}
+
+function getFields(){
+  const d={};
+  document.querySelectorAll('#fieldsArea select,#fieldsArea textarea').forEach(e=>{d[e.id]=e.value;});
+  return d;
+}
+
+async function generate(){
+  const btn=document.getElementById('genBtn');
+  const out=document.getElementById('outputArea');
+  const t=TASKS.find(x=>x.id===cur);
+  const d=getFields();
+
+  // Validate required fields
+  if(cur==='reply'&&!d.f_message?.trim()){
+    out.innerHTML=`<div class="loading" style="border-color:var(--danger);color:var(--danger)">⚠️ Вставь сообщение от подписчика</div>`;
+    return;
+  }
+  if(cur==='objection'&&!d.f_objection?.trim()){
+    out.innerHTML=`<div class="loading" style="border-color:var(--danger);color:var(--danger)">⚠️ Введи возражение клиента</div>`;
+    return;
+  }
+
+  btn.disabled=true;btn.textContent='⏳ Генерирую...';
+  out.innerHTML=`<div class="loading"><div class="spinner"></div>Нова работает над текстом...</div>`;
+  setTimeout(()=>out.scrollIntoView({behavior:'smooth',block:'start'}),100);
+
+  const userPrompt=t.prompt(d);
+  const systemPrompt=t.sys;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1024,
+        system: systemPrompt,
+        messages:[{role:'user',content:userPrompt}]
+      })
+    });
+
+    if(!res.ok){
+      const err=await res.text();
+      throw new Error('HTTP '+res.status+': '+err.slice(0,120));
+    }
+
+    const json=await res.json();
+    if(json.error) throw new Error(json.error.message||'API error');
+    const text=json.content?.map(c=>c.text||'').join('')||'Пустой ответ';
+
+    out.innerHTML=`
+      <div class="output-block">
+        <div class="output-head">
+          <span class="output-label">✓ Готово</span>
+          <button class="copy-btn" onclick="cp()">📋 Скопировать</button>
+        </div>
+        <div class="output-text" id="outText">${esc(text)}</div>
+      </div>`;
+    out.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    out.innerHTML=`<div class="loading" style="border-color:var(--danger);color:var(--danger)">⚠️ ${esc(e.message)}</div>`;
+  }
+  btn.disabled=false;btn.textContent='✦ Сгенерировать';
+}
+
+async function cp(){
+  const text=document.getElementById('outText')?.innerText||'';
+  const btn=document.querySelector('.copy-btn');
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  if(btn){btn.textContent='✓ Скопировано';setTimeout(()=>btn.textContent='📋 Скопировать',2000);}
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+init();
+</script>
+</body>
+</html>
