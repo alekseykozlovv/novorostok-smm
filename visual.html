@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>НовоРосток — Визуал</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#0a0d10;--surface:#111418;--surface2:#181d24;--border:#1f2733;
+  --accent:#f59e0b;--accent2:#fb923c;--green:#4ade80;
+  --text:#f0f4fa;--muted:#5a6a80;--danger:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;overscroll-behavior:none;}
+.app{display:flex;flex-direction:column;height:100dvh;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-name{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:600;}
+.logo-sub{font-size:10px;color:var(--muted);}
+.badge{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--accent);font-size:10px;padding:3px 10px;border-radius:20px;font-weight:600;}
+
+/* TABS */
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tabs-wrap::-webkit-scrollbar{display:none;}
+.tabs{display:flex;padding:10px 12px;gap:8px;width:max-content;}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;min-width:82px;color:var(--muted);font-family:'Manrope',sans-serif;}
+.tab.active{border-color:var(--accent);background:rgba(245,158,11,.08);color:var(--accent);}
+.tab-icon{font-size:20px;}.tab-label{font-size:10px;font-weight:600;text-align:center;line-height:1.3;}
+
+/* SCROLL */
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:12px;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;}
+.card-title{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:600;margin-bottom:4px;}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+
+/* FIELDS */
+.fields{display:flex;flex-direction:column;gap:10px;}
+.field-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+select,textarea,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Manrope',sans-serif;font-size:14px;padding:11px 13px;border-radius:10px;outline:none;-webkit-appearance:none;appearance:none;}
+select:focus,textarea:focus,input:focus{border-color:var(--accent);}
+textarea{resize:none;line-height:1.6;}
+textarea::placeholder,input::placeholder{color:var(--muted);}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.chip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:'Manrope',sans-serif;}
+.chip:active{border-color:var(--accent);color:var(--accent);}
+
+/* BUTTON */
+.gen-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0d10;border:none;border-radius:12px;padding:15px;font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.gen-btn:disabled{opacity:.5;}
+
+/* OUTPUT */
+.output-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.output-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.output-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);}
+.copy-btn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--accent);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;}
+
+/* SECTIONS внутри output */
+.out-body{padding:14px;display:flex;flex-direction:column;gap:14px;}
+.out-section{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.out-section-head{padding:8px 12px;background:rgba(245,158,11,.08);border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);}
+.out-section-body{padding:12px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:var(--text);}
+
+/* SIZE BADGES */
+.size-grid{display:flex;flex-wrap:wrap;gap:6px;padding:12px;}
+.size-badge{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--muted);}
+.size-badge strong{color:var(--text);display:block;font-size:12px;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:12px;padding:16px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🎨</div>
+      <div><div class="logo-name">НовоРосток</div><div class="logo-sub">Визуал-ассистент</div></div>
+    </div>
+    <div class="badge">Canva ТЗ</div>
+  </div>
+  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
+  <div class="scroll-area" id="scrollArea">
+    <div class="card">
+      <div class="card-title" id="taskTitle"></div>
+      <div class="card-desc" id="taskDesc"></div>
+    </div>
+    <div class="fields" id="fieldsArea"></div>
+    <button class="gen-btn" id="genBtn" onclick="generate()">✦ Создать ТЗ для Canva</button>
+    <div id="outputArea"></div>
+  </div>
+</div>
+
+<script>
+const BRAND = `
+БРЕНД «НОВОРОСТОК»:
+- Цвета: зелёный #4ade80 (основной), тёмно-зелёный #166534, белый, мягкий бежевый #fefce8
+- Шрифт заголовков: жирный, современный, без засечек
+- Стиль: тёплый, живой, не корпоративный, не детский — подростковый и родительский
+- Логотип: росток/листок (эмодзи 🌱 или иллюстрация)
+- Фото: живые, не стоковые — подростки в жизни, родители рядом с детьми
+- Нельзя: агрессивные цвета, много текста на картинке, назидательные образы
+- Статус: ранний MVP, ищем первых пользователей
+`;
+
+const SIZES = {
+  tg: [{name:'Пост TG',w:1280,h:720,ratio:'16:9'},{name:'Вертикаль TG',w:1080,h:1350,ratio:'4:5'}],
+  vk: [{name:'Пост VK',w:1200,h:628,ratio:'1.91:1'},{name:'Вертикаль VK',w:1080,h:1350,ratio:'4:5'}],
+  ig: [{name:'Пост IG',w:1080,h:1080,ratio:'1:1'},{name:'Story/Reels',w:1080,h:1920,ratio:'9:16'},{name:'Карусель',w:1080,h:1080,ratio:'1:1'}],
+  all: [{name:'TG пост',w:1280,h:720,ratio:'16:9'},{name:'VK пост',w:1200,h:628,ratio:'1.91:1'},{name:'IG пост',w:1080,h:1080,ratio:'1:1'},{name:'Story/Reels',w:1080,h:1920,ratio:'9:16'}]
+};
+
+const TASKS = [
+  {
+    id:'post', icon:'📸', label:'Пост\nTG/VK/IG',
+    title:'📸 ТЗ для поста',
+    desc:'Готовое задание для Canva: текст, фон, композиция, размеры.',
+    fields:()=>`
+      <div><div class="field-label">Платформа</div>
+      <select id="f_platform"><option value="tg">Telegram</option><option value="vk">ВКонтакте</option><option value="ig">Instagram</option><option value="all">Все платформы</option></select></div>
+      <div><div class="field-label">Тема поста</div>
+      <textarea id="f_topic" rows="2" placeholder="Например: почему подросток ничего не хочет..."></textarea>
+      <div class="chips">
+        <span class="chip" onclick="sf('f_topic','Умный ребёнок ничего не хочет')">Умный, но не хочет</span>
+        <span class="chip" onclick="sf('f_topic','Знакомство с Новой — AI-наставником')">Знакомство с Новой</span>
+        <span class="chip" onclick="sf('f_topic','Как перестать кричать из-за уроков')">Перестать кричать</span>
+        <span class="chip" onclick="sf('f_topic','Нет мечты — это нормально')">Нет мечты — норма</span>
+        <span class="chip" onclick="sf('f_topic','Приглашение попробовать бот бесплатно')">Первые пользователи</span>
+      </div></div>
+      <div><div class="field-label">Настроение визуала</div>
+      <select id="f_mood"><option>Тёплое и поддерживающее</option><option>Мотивирующее</option><option>Задумчивое / серьёзное</option><option>Лёгкое и дружелюбное</option><option>Экспертное</option></select></div>`,
+    sys: `Ты — арт-директор проекта «НовоРосток». Создаёшь технические задания для Canva. Отвечай только на русском.`,
+    prompt: d => `${BRAND}
+Создай подробное ТЗ для Canva для поста на платформу: ${d.f_platform}.
+Тема поста: ${d.f_topic || 'знакомство с проектом НовоРосток'}.
+Настроение: ${d.f_mood}.
+
+Ответь СТРОГО в таком формате (каждый блок отдельно):
+
+[ЗАГОЛОВОК]
+Текст заголовка для картинки (максимум 6 слов, крупно)
+
+[ПОДЗАГОЛОВОК]
+Короткий текст под заголовком (1 строка, необязательно)
+
+[ФОН]
+Опиши фон: цвет, градиент или фото. Укажи конкретные цвета из палитры бренда.
+
+[ИЗОБРАЖЕНИЕ]
+Что показать на картинке: человек, объект, иллюстрация. Конкретно и детально.
+
+[КОМПОЗИЦИЯ]
+Где что расположено: текст слева/справа/снизу, фото на фоне и т.д.
+
+[ЭЛЕМЕНТЫ]
+Дополнительные элементы: логотип, иконки, рамки, декор
+
+[CTA НА КАРТИНКЕ]
+Текст кнопки или призыва (если нужен): например "Попробуй бесплатно @NeuroMentorBot"
+
+[ИНСТРУКЦИЯ CANVA]
+Пошаговая инструкция как собрать это в Canva (5-7 шагов)`
+  },
+  {
+    id:'story', icon:'📱', label:'Story\nReels',
+    title:'📱 ТЗ для Story / Reels',
+    desc:'Вертикальный формат 9:16. Для TG, VK Stories, Instagram Reels.',
+    fields:()=>`
+      <div><div class="field-label">Тип</div>
+      <select id="f_type"><option>Статичная Story</option><option>Анимированная Story</option><option>Reels (видео-заставка)</option></select></div>
+      <div><div class="field-label">Тема</div>
+      <textarea id="f_topic" rows="2" placeholder="Например: приглашение попробовать бот..."></textarea>
+      <div class="chips">
+        <span class="chip" onclick="sf('f_topic','Попробуй Нову бесплатно')">Попробуй бесплатно</span>
+        <span class="chip" onclick="sf('f_topic','Вопрос для родителей о подростке')">Вопрос родителям</span>
+        <span class="chip" onclick="sf('f_topic','Знакомство с командой проекта')">О проекте</span>
+      </div></div>
+      <div><div class="field-label">Экранов</div>
+      <select id="f_screens"><option>1 экран</option><option>2 экрана</option><option>3 экрана</option></select></div>`,
+    sys:`Ты — арт-директор «НовоРосток». Создаёшь ТЗ для вертикального контента. На русском.`,
+    prompt: d => `${BRAND}
+Создай ТЗ для Canva: ${d.f_type}, ${d.f_screens}.
+Размер: 1080×1920px (9:16).
+Тема: ${d.f_topic || 'знакомство с НовоРосток'}.
+
+Для каждого экрана опиши:
+
+[ЭКРАН N — название]
+ФОН: ...
+ТЕКСТ КРУПНО: ...
+ТЕКСТ МЕЛКО: ...
+ИЗОБРАЖЕНИЕ/ИКОНКА: ...
+АНИМАЦИЯ (если есть): ...
+
+В конце — [ИНСТРУКЦИЯ CANVA] пошагово как собрать (5 шагов).`
+  },
+  {
+    id:'carousel', icon:'🎠', label:'Карусель',
+    title:'🎠 ТЗ для карусели',
+    desc:'3-7 слайдов. Для Instagram, VK, Telegram.',
+    fields:()=>`
+      <div><div class="field-label">Тема карусели</div>
+      <textarea id="f_topic" rows="2" placeholder="Например: 5 признаков что подросток потерял мотивацию..."></textarea>
+      <div class="chips">
+        <span class="chip" onclick="sf('f_topic','5 признаков что подросток потерял интерес')">5 признаков</span>
+        <span class="chip" onclick="sf('f_topic','Как Нова помогает — пошагово')">Как работает Нова</span>
+        <span class="chip" onclick="sf('f_topic','3 ошибки родителей в разговоре с подростком')">3 ошибки родителей</span>
+        <span class="chip" onclick="sf('f_topic','Что такое НовоРосток — знакомство')">Что такое НовоРосток</span>
+      </div></div>
+      <div><div class="field-label">Количество слайдов</div>
+      <select id="f_slides"><option>3 слайда</option><option>5 слайдов</option><option>7 слайдов</option></select></div>
+      <div><div class="field-label">Платформа</div>
+      <select id="f_platform"><option>Instagram (1080×1080)</option><option>VK (1080×1080)</option><option>Telegram</option></select></div>`,
+    sys:`Ты — арт-директор «НовоРосток». Создаёшь ТЗ для каруселей. На русском.`,
+    prompt: d => `${BRAND}
+Создай ТЗ для карусели в Canva.
+Тема: ${d.f_topic || 'знакомство с НовоРосток'}.
+Слайдов: ${d.f_slides}. Платформа: ${d.f_platform}.
+Размер: 1080×1080px.
+
+Структура карусели:
+- Слайд 1: обложка (цепляющий заголовок)
+- Средние слайды: контент по теме
+- Последний слайд: CTA → @NeuroMentorBot
+
+Для каждого слайда:
+[СЛАЙД N — название]
+ЗАГОЛОВОК: ...
+ТЕКСТ: ...
+ИКОНКА/ИЛЛЮСТРАЦИЯ: ...
+ФОН: ...
+АКЦЕНТ: ...
+
+В конце [ИНСТРУКЦИЯ CANVA] — как сделать всю карусель пошагово (7 шагов).`
+  },
+  {
+    id:'cover', icon:'🖼️', label:'Обложка\nканала',
+    title:'🖼️ Обложка Telegram-канала',
+    desc:'ТЗ для обложки канала. Размер 1280×512px.',
+    fields:()=>`
+      <div><div class="field-label">Что должно быть на обложке</div>
+      <select id="f_content"><option>Логотип + название + слоган</option><option>Персонаж Новы + название</option><option>Минималистичный стиль</option><option>Фото основателя + название</option></select></div>
+      <div><div class="field-label">Слоган (необязательно)</div>
+      <textarea id="f_slogan" rows="2" placeholder="Например: AI-наставник для подростков 12–18 лет"></textarea></div>`,
+    sys:`Ты — арт-директор «НовоРосток». Создаёшь ТЗ для обложки Telegram-канала. На русском.`,
+    prompt: d => `${BRAND}
+Создай ТЗ для обложки Telegram-канала НовоРосток.
+Размер: 1280×512px.
+Содержание: ${d.f_content}.
+${d.f_slogan ? 'Слоган: ' + d.f_slogan : ''}
+
+Опиши:
+[ФОН]: цвет, градиент
+[ЛЕВАЯ ЧАСТЬ]: что слева
+[ПРАВАЯ ЧАСТЬ]: что справа
+[ТЕКСТ]: название, слоган, размеры шрифтов
+[ЛОГОТИП]: где и как разместить 🌱
+[СТИЛЬ]: общее ощущение
+
+[ИНСТРУКЦИЯ CANVA] — пошагово как собрать (6 шагов).`
+  },
+  {
+    id:'avatar', icon:'🟢', label:'Аватар\nи иконка',
+    title:'🟢 Аватар и иконка профиля',
+    desc:'ТЗ для аватара канала, бота и профиля в соцсетях.',
+    fields:()=>`
+      <div><div class="field-label">Где будет использоваться</div>
+      <select id="f_use"><option>Telegram-канал и бот</option><option>ВКонтакте</option><option>Instagram</option><option>Все платформы</option></select></div>
+      <div><div class="field-label">Стиль</div>
+      <select id="f_style"><option>Иконка с ростком на фоне</option><option>Буква Н на фоне</option><option>Абстрактный символ роста</option><option>Персонаж Новы</option></select></div>`,
+    sys:`Ты — арт-директор «НовоРосток». Создаёшь ТЗ для аватаров. На русском.`,
+    prompt: d => `${BRAND}
+Создай ТЗ для аватара/иконки профиля НовоРосток.
+Использование: ${d.f_use}.
+Стиль: ${d.f_style}.
+Размер: 400×400px (отображается до 50×50px — должно читаться).
+
+[ФОН]: цвет или градиент
+[ЦЕНТРАЛЬНЫЙ ЭЛЕМЕНТ]: что в центре, детально
+[ЦВЕТА]: конкретные HEX из палитры бренда
+[ШРИФТ]: если есть буквы
+[ТЕСТ ЧИТАЕМОСТИ]: как выглядит при уменьшении до 50px
+
+[ИНСТРУКЦИЯ CANVA] — пошагово (5 шагов).`
+  },
+  {
+    id:'quote', icon:'💬', label:'Цитата\nкарточка',
+    title:'💬 Карточка с цитатой',
+    desc:'Красивая карточка с цитатой или фактом. Для всех платформ.',
+    fields:()=>`
+      <div><div class="field-label">Цитата или факт</div>
+      <textarea id="f_quote" rows="3" placeholder="Вставь цитату или напиши тему — придумаю сам..."></textarea>
+      <div class="chips">
+        <span class="chip" onclick="sf('f_quote','70% подростков не понимают, кем хотят стать')">Факт о подростках</span>
+        <span class="chip" onclick="sf('f_quote','Подростку нужен не контроль, а безопасный собеседник')">Про наставника</span>
+        <span class="chip" onclick="sf('f_quote','Нет мечты — это не приговор. Это начало пути')">Про мечту</span>
+      </div></div>
+      <div><div class="field-label">Формат</div>
+      <select id="f_format"><option>Квадрат 1080×1080</option><option>Вертикаль 1080×1350</option></select></div>`,
+    sys:`Ты — арт-директор «НовоРосток». Создаёшь ТЗ для карточек с цитатами. На русском.`,
+    prompt: d => `${BRAND}
+Создай ТЗ для карточки с цитатой/фактом в Canva.
+${d.f_quote ? 'Цитата: ' + d.f_quote : 'Придумай подходящую цитату про подростков и развитие.'}
+Формат: ${d.f_format}.
+
+[ЦИТАТА НА КАРТОЧКЕ]: финальный текст (можно немного отредактировать)
+[ФОН]: цвет, текстура или градиент
+[ТИПОГРАФИКА]: размер, стиль, расположение текста
+[ДЕКОРАТИВНЫЕ ЭЛЕМЕНТЫ]: кавычки, линии, иконки
+[ПОДПИСЬ]: @NeuroMentorBot или НовоРосток внизу
+[НАСТРОЕНИЕ]: общее ощущение карточки
+
+[ИНСТРУКЦИЯ CANVA] — пошагово (5 шагов).`
+  }
+];
+
+let cur='post';
+
+function init(){
+  const el=document.getElementById('tabs');
+  TASKS.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tab'+(t.id===cur?' active':'');
+    b.id='tab-'+t.id;
+    b.innerHTML=`<span class="tab-icon">${t.icon}</span><span class="tab-label">${t.label}</span>`;
+    b.onclick=()=>sw(t.id);
+    el.appendChild(b);
+  });
+  render(cur);
+}
+
+function sw(id){
+  document.getElementById('tab-'+cur)?.classList.remove('active');
+  cur=id;
+  document.getElementById('tab-'+id)?.classList.add('active');
+  document.getElementById('tab-'+id)?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  render(id);
+}
+
+function render(id){
+  const t=TASKS.find(x=>x.id===id);
+  document.getElementById('taskTitle').textContent=t.title;
+  document.getElementById('taskDesc').textContent=t.desc;
+  document.getElementById('fieldsArea').innerHTML=t.fields();
+  document.getElementById('outputArea').innerHTML='';
+  document.getElementById('scrollArea').scrollTo(0,0);
+}
+
+function sf(id,val){const e=document.getElementById(id);if(e)e.value=val;}
+
+function getFields(){
+  const d={};
+  document.querySelectorAll('#fieldsArea select,#fieldsArea textarea,#fieldsArea input').forEach(e=>{d[e.id]=e.value;});
+  return d;
+}
+
+async function generate(){
+  const btn=document.getElementById('genBtn');
+  const out=document.getElementById('outputArea');
+  const t=TASKS.find(x=>x.id===cur);
+  const d=getFields();
+
+  btn.disabled=true;btn.textContent='⏳ Готовлю ТЗ...';
+  out.innerHTML=`<div class="loading"><div class="spinner"></div>Создаю задание для Canva...</div>`;
+  setTimeout(()=>out.scrollIntoView({behavior:'smooth',block:'start'}),100);
+
+  try{
+    const res=await fetch('/api/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:t.sys,prompt:t.prompt(d)})
+    });
+    const json=await res.json();
+    if(json.error)throw new Error(json.error);
+    const text=json.text||'';
+
+    // Парсим секции
+    const sections = parseSections(text);
+
+    let html=`<div class="output-block">
+      <div class="output-head">
+        <span class="output-label">✓ ТЗ для Canva готово</span>
+        <button class="copy-btn" onclick="cp()">📋 Всё скопировать</button>
+      </div>
+      <div class="out-body" id="outText">`;
+
+    sections.forEach(s=>{
+      html+=`<div class="out-section">
+        <div class="out-section-head">${esc(s.title)}</div>
+        <div class="out-section-body">${esc(s.body)}</div>
+      </div>`;
+    });
+
+    html+=`</div></div>`;
+    out.innerHTML=html;
+    out.scrollIntoView({behavior:'smooth',block:'start'});
+
+  }catch(e){
+    out.innerHTML=`<div class="loading" style="border-color:var(--danger);color:var(--danger)">⚠️ ${esc(e.message)}</div>`;
+  }
+  btn.disabled=false;btn.textContent='✦ Создать ТЗ для Canva';
+}
+
+function parseSections(text){
+  const sections=[];
+  const regex=/\[([^\]]+)\]\s*\n([\s\S]*?)(?=\n\[|$)/g;
+  let match;
+  while((match=regex.exec(text))!==null){
+    sections.push({title:match[1].trim(),body:match[2].trim()});
+  }
+  if(sections.length===0){
+    sections.push({title:'ТЗ',body:text.trim()});
+  }
+  return sections;
+}
+
+async function cp(){
+  const el=document.getElementById('outText');
+  const text=el?el.innerText:'';
+  const btn=document.querySelector('.copy-btn');
+  try{await navigator.clipboard.writeText(text);}
+  catch{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
+  if(btn){btn.textContent='✓ Скопировано';setTimeout(()=>btn.textContent='📋 Всё скопировать',2000);}
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+init();
+</script>
+</body>
+</html>
