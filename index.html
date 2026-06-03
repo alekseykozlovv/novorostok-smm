@@ -69,115 +69,173 @@ textarea::placeholder{color:var(--muted);}
   </div>
 </div>
 <script>
+// Контекст продукта — вшит в каждый промпт
+const PRODUCT_CONTEXT = `
+ВАЖНО — ТЕКУЩИЙ СТАТУС ПРОДУКТА (май 2025, ранний MVP):
+- Бот @NeuroMentorBot работает в Telegram
+- Нова знакомится с подростком и проводит короткое интервью
+- По итогу выдаёт первый отчёт о направлениях развития
+- Продукт БЕСПЛАТНЫЙ на старте — никаких оплат пока нет
+- Мы только начинаем и ищем первых пользователей
+
+ПРАВИЛА ДЛЯ ВСЕХ ПОСТОВ:
+- Не пиши как будто Нова уже давно работает с сотнями семей
+- Не придумывай истории успеха — продукт новый
+- Не обещай результаты которых ещё не было
+- CTA всегда: "Попробуй бесплатно → @NeuroMentorBot"
+- Тон: честный, тёплый, "мы только начинаем и приглашаем первых"
+- Можно говорить о проблеме и о том, что мы создаём решение
+- Нельзя говорить как будто решение уже полностью готово и проверено
+`;
+
 const TASKS=[
   {id:'post',icon:'✍️',label:'Пост\nTG/VK',
    title:'✍️ Пост для Telegram / ВКонтакте',
-   desc:'Пост, который строит доверие. Без агрессивных продаж.',
+   desc:'Честный пост о проблеме. CTA → @NeuroMentorBot.',
    fields:()=>`
     <div><div class="field-label">Аудитория</div>
     <select id="f_audience"><option>Родители подростков 35–45 лет</option><option>Подростки 12–16 лет</option><option>Оба сегмента</option></select></div>
     <div><div class="field-label">Тип поста</div>
-    <select id="f_type"><option>История / кейс</option><option>Польза / совет</option><option>Боль / проблема</option><option>Эмоциональный</option><option>Знакомство с Новой</option></select></div>
+    <select id="f_type"><option>Боль / проблема</option><option>История основателя</option><option>Почему мы это создали</option><option>Знакомство с Новой</option><option>Польза / совет</option></select></div>
     <div><div class="field-label">Платформа</div>
-    <select id="f_platform"><option>Telegram-канал</option><option>ВКонтакте</option><option>Оба</option></select></div>
+    <select id="f_platform"><option>Telegram-канал</option><option>ВКонтакте</option></select></div>
     <div><div class="field-label">Тема (необязательно)</div>
     <textarea id="f_topic" rows="2" placeholder="Например: почему умный ребёнок ничего не хочет..."></textarea>
     <div class="chips">
       <span class="chip" onclick="sf('f_topic','Умный ребёнок ничего не хочет')">Умный, но не хочет</span>
       <span class="chip" onclick="sf('f_topic','Как перестать кричать из-за уроков')">Перестать кричать</span>
-      <span class="chip" onclick="sf('f_topic','Знакомство с Новой — AI-наставником')">Знакомство с Новой</span>
+      <span class="chip" onclick="sf('f_topic','Мы создали Нову — вот почему')">Почему мы создали это</span>
       <span class="chip" onclick="sf('f_topic','Почему профориентация не работает')">Провал профориентации</span>
       <span class="chip" onclick="sf('f_topic','Нет мечты — это нормально')">Нет мечты — норма</span>
-      <span class="chip" onclick="sf('f_topic','AI помогает без давления')">AI без давления</span>
+      <span class="chip" onclick="sf('f_topic','Приглашаем первых пользователей')">Первые пользователи</span>
     </div></div>`,
-   sys:`Ты — SMM-копирайтер проекта «НовоРосток» (AI-наставник для подростков 12–18 лет). ГОЛОС: тёплый, честный, без давления. Фокус — снижение напряжения в семье. Никаких манипуляций и обещаний успеха.`,
-   prompt:d=>`Напиши пост для ${d.f_platform||'Telegram'}, аудитория: ${d.f_audience||'родители'}, тип: ${d.f_type||'история'}.${d.f_topic?' Тема: '+d.f_topic:''} Структура: 1) Хук (1-2 строки) 2) Тело (3-5 абзацев) 3) Мягкий CTA. 180-260 слов. 1-3 эмодзи. Только пост.`
+   sys:`Ты — SMM-копирайтер проекта «НовоРосток». Голос: честный, тёплый, без давления. Продукт в самом начале пути, ищет первых пользователей.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Напиши пост для ${d.f_platform||'Telegram'}.
+Аудитория: ${d.f_audience}. Тип: ${d.f_type}.${d.f_topic?' Тема: '+d.f_topic:''}
+
+Структура:
+1) Хук — про реальную боль или проблему (1-2 строки)
+2) Тело — говори о проблеме честно, упомяни что мы создаём решение (3-4 абзаца)
+3) CTA: "Попробуй бесплатно → @NeuroMentorBot"
+
+180-240 слов. 1-2 эмодзи. Только пост, без пояснений.`
   },
   {id:'story',icon:'📱',label:'Stories',
    title:'📱 Текст для Stories',
-   desc:'Короткий текст. 2-3 экрана, максимум вовлечения.',
+   desc:'Короткий честный текст. 2-3 экрана.',
    fields:()=>`
     <div><div class="field-label">Аудитория</div>
     <select id="f_audience"><option>Родители</option><option>Подростки</option></select></div>
     <div><div class="field-label">Цель</div>
-    <select id="f_goal"><option>Вовлечь / познакомить</option><option>Привести в бот</option><option>Вызвать эмоцию</option><option>Опрос / интерактив</option></select></div>
+    <select id="f_goal"><option>Рассказать о проекте</option><option>Позвать в бот</option><option>Вызвать узнавание</option><option>Опрос / вопрос</option></select></div>
     <div><div class="field-label">Тема</div>
-    <textarea id="f_topic" rows="2" placeholder="Например: момент когда ребёнок сказал 'не хочу'..."></textarea></div>`,
-   sys:`Ты — копирайтер «НовоРосток». Создаёшь тексты для Stories. Голос: живой, тёплый, без корпоративщины.`,
-   prompt:d=>`Аудитория: ${d.f_audience}. Цель: ${d.f_goal}. Тема: ${d.f_topic||'придумай сам'}. Напиши 2-3 экрана Stories. Обозначь [Экран 1], [Экран 2] и т.д. Экран 1: хук 1-2 предложения. Последний: мягкий CTA. Очень короткие предложения.`
+    <textarea id="f_topic" rows="2" placeholder="Например: конфликт из-за уроков..."></textarea></div>`,
+   sys:`Ты — копирайтер «НовоРосток». Продукт новый, ищет первых пользователей. Честно и тепло.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Аудитория: ${d.f_audience}. Цель: ${d.f_goal}. Тема: ${d.f_topic||'придумай сам'}.
+Напиши 2-3 экрана Stories. [Экран 1]: хук про боль. [Экран 2]: что мы делаем. [Экран 3]: CTA → @NeuroMentorBot.
+Очень короткие предложения. Живо. На русском.`
   },
   {id:'plan',icon:'📅',label:'План\nнедели',
    title:'📅 Контент-план на неделю',
-   desc:'7 постов с темами, типами и CTA.',
+   desc:'7 постов для раннего MVP. Честно, без выдуманных кейсов.',
    fields:()=>`
     <div><div class="field-label">Платформа</div>
     <select id="f_platform"><option>Telegram-канал</option><option>ВКонтакте</option><option>Оба</option></select></div>
     <div><div class="field-label">Акцент недели</div>
-    <select id="f_focus"><option>Знакомство с проектом</option><option>Боли родителей</option><option>Истории пользователей</option><option>Знакомство с Новой</option><option>Экспертный контент</option><option>Прогрев к продаже</option></select></div>`,
-   sys:`Ты — контент-стратег «НовоРосток».`,
-   prompt:d=>`Контент-план на 7 дней для ${d.f_platform}. Акцент: ${d.f_focus}. Чередуй типы: история, боль, польза, знакомство, интерактив, эмоциональный, лёгкий. Формат каждого дня: День N | [Тип] | Аудитория: ... / 📌 Тема: ... / 💡 Идея: ... / 🎯 CTA: ...`
+    <select id="f_focus"><option>Знакомство с проектом</option><option>Боли родителей</option><option>История создания</option><option>Знакомство с Новой</option><option>Приглашение первых пользователей</option></select></div>`,
+   sys:`Ты — контент-стратег «НовоРосток». Продукт — ранний MVP, ищет первых пользователей.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Контент-план на 7 дней для ${d.f_platform}. Акцент: ${d.f_focus}.
+Важно: не придумывай истории успеха — продукт только запустился. Пиши про проблему, про то зачем создали, про приглашение попробовать.
+Формат каждого дня:
+День N | [Тип] | Аудитория: ...
+📌 Тема: ...
+💡 Идея: ...
+🎯 CTA: ...`
   },
   {id:'hook',icon:'🎯',label:'Хуки',
    title:'🎯 Хуки и заголовки',
-   desc:'10 цепляющих первых строк для постов.',
+   desc:'10 цепляющих первых строк.',
    fields:()=>`
     <div><div class="field-label">Аудитория</div>
     <select id="f_audience"><option>Родители</option><option>Подростки</option><option>Оба</option></select></div>
     <div><div class="field-label">Тема</div>
     <select id="f_theme"><option>Мотивация и интерес к учёбе</option><option>Конфликты родитель-ребёнок</option><option>Выбор профессии / будущее</option><option>Знакомство с Новой</option><option>Страх неопределённости</option></select></div>`,
-   sys:`Ты — копирайтер «НовоРосток». Пишешь цепляющие хуки без кликбейта.`,
-   prompt:d=>`Напиши 10 хуков (первых строк постов). Аудитория: ${d.f_audience}. Тема: ${d.f_theme}. Разные форматы: вопрос, утверждение, история, факт. 1-2 предложения каждый. Пронумеруй 1-10.`
+   sys:`Ты — копирайтер «НовоРосток». Пишешь хуки про реальные боли, без обещаний результатов.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Напиши 10 хуков (первых строк постов). Аудитория: ${d.f_audience}. Тема: ${d.f_theme}.
+Хуки про реальную боль и узнавание — НЕ про результаты продукта.
+Разные форматы: вопрос, утверждение, история, факт. 1-2 предложения. Пронумеруй 1-10.`
   },
   {id:'reply',icon:'💬',label:'Ответ\nклиенту',
    title:'💬 Ответ подписчику',
-   desc:'Вставь сообщение — получи живой ответ в голосе НовоРостка.',
+   desc:'Живой честный ответ. Не обещаем лишнего.',
    fields:()=>`
     <div><div class="field-label">Сообщение от подписчика</div>
-    <textarea id="f_message" rows="4" placeholder="Вставь комментарий или вопрос от подписчика..."></textarea></div>
+    <textarea id="f_message" rows="4" placeholder="Вставь комментарий или вопрос..."></textarea></div>
     <div><div class="field-label">Кто написал</div>
     <select id="f_who"><option>Родитель</option><option>Подросток</option><option>Непонятно</option></select></div>
-    <div><div class="field-label">Тон ответа</div>
+    <div><div class="field-label">Тон</div>
     <select id="f_tone"><option>Тёплый и поддерживающий</option><option>Экспертный</option><option>Лёгкий и дружелюбный</option></select></div>`,
-   sys:`Ты — комьюнити-менеджер «НовоРосток». Отвечаешь живо, по-человечески.`,
-   prompt:d=>`Сообщение от ${d.f_who||'подписчика'}: "${d.f_message}". Тон: ${d.f_tone||'тёплый'}. Напиши ответ 3-6 предложений. Покажи что слышишь. Не навязывай продукт. Обращайся на "ты" (подросток) или "вы" (родитель). Только ответ.`
+   sys:`Ты — комьюнити-менеджер «НовоРосток». Честный, тёплый. Не обещаешь лишнего — продукт новый.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Сообщение от ${d.f_who||'подписчика'}: "${d.f_message}". Тон: ${d.f_tone||'тёплый'}.
+Напиши ответ 3-5 предложений. Честно — если чего-то ещё нет, скажи что работаем над этим.
+Мягко предложи попробовать бот @NeuroMentorBot если уместно. Только ответ.`
   },
   {id:'objection',icon:'🛡️',label:'Возра-\nжение',
    title:'🛡️ Закрыть возражение',
-   desc:'3 варианта ответа — от мягкого к убедительному.',
+   desc:'3 честных варианта ответа без манипуляций.',
    fields:()=>`
-    <div><div class="field-label">Возражение клиента</div>
+    <div><div class="field-label">Возражение</div>
     <textarea id="f_objection" rows="3" placeholder="Например: 'Зачем AI, когда есть психолог?'..."></textarea>
     <div class="chips">
       <span class="chip" onclick="sf('f_objection','Зачем AI, если есть живой психолог?')">AI vs психолог</span>
-      <span class="chip" onclick="sf('f_objection','3900 рублей — это дорого')">Дорого</span>
+      <span class="chip" onclick="sf('f_objection','Это ещё не проверено, слишком новое')">Слишком новое</span>
       <span class="chip" onclick="sf('f_objection','Ребёнок не будет пользоваться')">Не будет польз.</span>
       <span class="chip" onclick="sf('f_objection','Не доверяю AI с детьми')">Не доверяю AI</span>
       <span class="chip" onclick="sf('f_objection','Это просто ChatGPT?')">Просто ChatGPT?</span>
     </div></div>`,
-   sys:`Ты — эксперт по продажам «НовоРосток». Снимаешь возражения без манипуляций.`,
-   prompt:d=>`Возражение: "${d.f_objection}". Напиши 3 варианта ответа: [Мягкий], [Стандартный], [Убедительный]. Начни с эмпатии. 3-5 предложений каждый.`
+   sys:`Ты — основатель «НовоРосток». Отвечаешь честно, без манипуляций. Признаёшь что продукт новый.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Возражение: "${d.f_objection}".
+Напиши 3 варианта: [Мягкий], [Стандартный], [Убедительный].
+Важно: не обещай то чего ещё нет. Признай что мы в начале пути — это сила, не слабость.
+3-4 предложения каждый. Начни с эмпатии.`
   },
   {id:'promo',icon:'💰',label:'Прогрев',
-   title:'💰 Прогрев к продаже',
-   desc:'Серия из 3 постов к покупке.',
+   title:'💰 Прогрев к первым пользователям',
+   desc:'3 поста, которые приводят первых людей в бот.',
    fields:()=>`
-    <div><div class="field-label">Продукт</div>
-    <select id="f_product"><option>ПрофНавигатор (3 900 ₽)</option><option>Подписка (1 490 ₽/мес)</option><option>Бесплатный вход в бот</option></select></div>
+    <div><div class="field-label">Цель прогрева</div>
+    <select id="f_goal"><option>Привести в бот @NeuroMentorBot (бесплатно)</option><option>Собрать первых 10 семей</option><option>Получить обратную связь</option></select></div>
     <div><div class="field-label">Аудитория</div>
     <select id="f_audience"><option>Родители</option><option>Подростки</option></select></div>`,
-   sys:`Ты — стратег прогревов «НовоРосток». Мягкие серии постов без давления.`,
-   prompt:d=>`Продукт: ${d.f_product}. Аудитория: ${d.f_audience}. Серия 3 постов: [ПОСТ 1] Боль без продажи. [ПОСТ 2] Решение, упомяни продукт мягко. [ПОСТ 3] Прямое предложение без давления. 100-180 слов каждый.`
+   sys:`Ты — стратег «НовоРосток». Продукт ищет первых пользователей. Честный прогрев без давления.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Цель: ${d.f_goal}. Аудитория: ${d.f_audience}.
+Серия 3 постов для привлечения первых пользователей в бот:
+[ПОСТ 1]: Боль — про проблему, без упоминания продукта
+[ПОСТ 2]: Мы создали кое-что — знакомство с Новой честно
+[ПОСТ 3]: Приглашение попробовать бесплатно → @NeuroMentorBot
+Не выдумывай истории успеха. 100-160 слов каждый.`
   },
   {id:'expert',icon:'🧠',label:'Эксперт',
    title:'🧠 Экспертный пост',
-   desc:'Глубокий авторский пост, который строит доверие.',
+   desc:'Глубокий пост о проблеме. Строит доверие к теме.',
    fields:()=>`
     <div><div class="field-label">Тема</div>
-    <select id="f_theme"><option>Почему подростки теряют мотивацию</option><option>Как работает RIASEC для подростков</option><option>Разница между наставником и тестом</option><option>Почему AI-этика важна с детьми</option><option>Как снизить конфликты в семье</option></select></div>
+    <select id="f_theme"><option>Почему подростки теряют мотивацию</option><option>Как работает RIASEC для подростков</option><option>Разница между наставником и тестом</option><option>Почему AI-этика важна с детьми</option><option>Как снизить конфликты в семье из-за учёбы</option></select></div>
     <div><div class="field-label">Длина</div>
-    <select id="f_length"><option>Средний (300-400 слов)</option><option>Длинный (500-700 слов)</option></select></div>`,
-   sys:`Ты — основатель «НовоРосток». Пишешь экспертные посты от первого лица.`,
-   prompt:d=>`Тема: ${d.f_theme}. Длина: ${d.f_length}. Структура: хук → суть → разбор с примерами → вывод → мягкая связь с НовоРостком. Живо, без академической скуки.`
+    <select id="f_length"><option>Средний (250-350 слов)</option><option>Длинный (400-600 слов)</option></select></div>`,
+   sys:`Ты — основатель «НовоРосток». Пишешь экспертно о проблеме. Продукт упоминаешь в конце мягко.`,
+   prompt:d=>`${PRODUCT_CONTEXT}
+Тема: ${d.f_theme}. Длина: ${d.f_length}.
+Структура: хук → суть проблемы → разбор с примерами → вывод.
+В конце 1-2 предложения: "Именно поэтому мы создали Нову. Попробуй бесплатно → @NeuroMentorBot"
+Живо, без академической скуки. Не придумывай истории успеха.`
   }
 ];
 
@@ -231,7 +289,7 @@ async function generate(){
     out.innerHTML=`<div class="loading" style="border-color:var(--danger);color:var(--danger)">⚠️ Вставь сообщение от подписчика</div>`;return;
   }
   if(cur==='objection'&&!d.f_objection?.trim()){
-    out.innerHTML=`<div class="loading" style="border-color:var(--danger);color:var(--danger)">⚠️ Введи возражение клиента</div>`;return;
+    out.innerHTML=`<div class="loading" style="border-color:var(--danger);color:var(--danger)">⚠️ Введи возражение</div>`;return;
   }
 
   btn.disabled=true;btn.textContent='⏳ Генерирую...';
